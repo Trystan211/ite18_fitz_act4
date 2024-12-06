@@ -66,16 +66,23 @@ const lava = (() => {
 })();
 scene.add(lava);
 
-// === Lava Creature Model ===
+// === Lava Creature Model with Animations ===
 let lavaCreature = null;
+let mixer = null; // Animation mixer for the creature
 
 new GLTFLoader().load(
-    'https://trystan211.github.io/ite18_fitz_act4/metroid_primecreaturesmagmoor.glb', // Replace with the actual path to your model
+    'path_to_your_lava_creature.glb', // Replace with the actual path to your model
     (gltf) => {
         lavaCreature = gltf.scene;
         lavaCreature.position.set(0, 1, 0);
         lavaCreature.scale.set(5, 5, 5); // Adjust as necessary
         scene.add(lavaCreature);
+
+        // Set up the animation mixer
+        mixer = new THREE.AnimationMixer(lavaCreature);
+        gltf.animations.forEach((clip) => {
+            mixer.clipAction(clip).play();
+        });
     },
     undefined,
     (error) => console.error("Failed to load lava creature model:", error)
@@ -145,9 +152,13 @@ scene.add(skybox);
 const clock = new THREE.Clock();
 
 function animate() {
+    const delta = clock.getDelta(); // Time since the last frame
     const time = clock.getElapsedTime();
+
+    // Update lava waves
     lava.material.uniforms.time.value = time;
 
+    // Update rain
     const rainPositions = lavaRain.geometry.attributes.position.array;
     const rainVelocities = lavaRain.userData.velocities;
 
@@ -158,14 +169,16 @@ function animate() {
     }
     lavaRain.geometry.attributes.position.needsUpdate = true;
 
+    // Update dynamic light
     dynamicLight.position.set(
         10 * Math.sin(time * 0.5),
         10,
         10 * Math.cos(time * 0.5)
     );
 
-    if (lavaCreature) {
-        lavaCreature.rotation.y += 0.01; // Rotate the creature for effect
+    // Update lava creature animations
+    if (mixer) {
+        mixer.update(delta);
     }
 
     renderer.render(scene, camera);
