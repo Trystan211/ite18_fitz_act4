@@ -71,7 +71,7 @@ let lavaCreature = null;
 let mixer = null; // Animation mixer for the creature
 
 new GLTFLoader().load(
-    'path_to_your_lava_creature.glb', // Replace with the actual path to your model
+    'https://trystan211.github.io/ite18_fitz_act4/metroid_primecreaturesmagmoor.glb', // Replace with the actual path to your model
     (gltf) => {
         lavaCreature = gltf.scene;
         lavaCreature.position.set(0, 1, 0);
