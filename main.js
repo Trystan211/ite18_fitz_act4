@@ -18,22 +18,22 @@ scene.add(camera);
 new OrbitControls(camera, renderer.domElement);
 
 // === Lighting ===
-const dynamicLight = new THREE.PointLight(0xffffff, 8, 50);
+const dynamicLight = new THREE.PointLight(0xff4500, 8, 50); // Lava light
 dynamicLight.position.set(0, 10, 0);
 scene.add(dynamicLight);
 
-// === Ocean ===
-const ocean = (() => {
+// === Lava Waves ===
+const lava = (() => {
     const geometry = new THREE.PlaneGeometry(75, 75, 300, 300);
     geometry.rotateX(-Math.PI / 2);
 
     const material = new THREE.ShaderMaterial({
         uniforms: {
             time: { value: 0 },
-            waveHeight: { value: 1.5 },
-            waveFrequency: { value: 0.5 },
-            deepColor: { value: new THREE.Color(0x8B8000) },
-            shallowColor: { value: new THREE.Color(0xFFD700) },
+            waveHeight: { value: 0.3 },
+            waveFrequency: { value: 0.8 },
+            deepColor: { value: new THREE.Color(0x8b0000) }, // Dark red
+            glowColor: { value: new THREE.Color(0xff4500) }, // Bright orange
         },
         vertexShader: `
             uniform float time;
@@ -51,11 +51,12 @@ const ocean = (() => {
         `,
         fragmentShader: `
             uniform vec3 deepColor;
-            uniform vec3 shallowColor;
+            uniform vec3 glowColor;
             varying vec2 vUv;
 
             void main() {
-                vec3 color = mix(deepColor, shallowColor, vUv.y * 0.8 + 0.2);
+                float flow = sin(vUv.y * 10.0 + vUv.x * 5.0) * 0.5 + 0.5; // Flow pattern
+                vec3 color = mix(deepColor, glowColor, flow);
                 gl_FragColor = vec4(color, 1.0);
             }
         `,
@@ -63,28 +64,25 @@ const ocean = (() => {
 
     return new THREE.Mesh(geometry, material);
 })();
-scene.add(ocean);
+scene.add(lava);
 
-// === Hotdog Model ===
-let hotdog = null;
+// === Lava Creature Model ===
+let lavaCreature = null;
 
 new GLTFLoader().load(
-    'https://trystan211.github.io/ite18_joshua_act4/low_poly_hot_dog.glb',
+    '', // Replace with the actual path to your model
     (gltf) => {
-        hotdog = gltf.scene;
-        hotdog.position.set(1, 1, 1);
-        hotdog.scale.set(25, 25, 25);
-        scene.add(hotdog);
-
-        const box = new THREE.Box3().setFromObject(hotdog);
-        console.log('Hotdog dimensions:', box.getSize(new THREE.Vector3()));
+        lavaCreature = gltf.scene;
+        lavaCreature.position.set(0, 1, 0);
+        lavaCreature.scale.set(5, 5, 5); // Adjust as necessary
+        scene.add(lavaCreature);
     },
     undefined,
-    (error) => console.error("Failed to load hotdog model:", error)
+    (error) => console.error("Failed to load lava creature model:", error)
 );
 
-// === Rain ===
-const rain = (() => {
+// === Lava Rain ===
+const lavaRain = (() => {
     const count = 10000;
     const positions = [];
     const velocities = [];
@@ -102,8 +100,8 @@ const rain = (() => {
     geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
 
     const material = new THREE.PointsMaterial({
-        color: 0xff0000,
-        size: 0.2,
+        color: 0xff4500,
+        size: 0.5,
         transparent: true,
         opacity: 0.8,
     });
@@ -113,13 +111,13 @@ const rain = (() => {
 
     return points;
 })();
-scene.add(rain);
+scene.add(lavaRain);
 
 // === Skybox ===
 const skyboxMaterial = new THREE.ShaderMaterial({
     uniforms: {
-        topColor: { value: new THREE.Color(0xff5733) }, // Ketchup red
-        bottomColor: { value: new THREE.Color(0xffd700) }, // Mustard yellow
+        topColor: { value: new THREE.Color(0x4b0082) }, // Dark violet
+        bottomColor: { value: new THREE.Color(0xff4500) }, // Bright lava
     },
     vertexShader: `
         varying vec3 vWorldPosition;
@@ -148,17 +146,17 @@ const clock = new THREE.Clock();
 
 function animate() {
     const time = clock.getElapsedTime();
-    ocean.material.uniforms.time.value = time;
+    lava.material.uniforms.time.value = time;
 
-    const rainPositions = rain.geometry.attributes.position.array;
-    const rainVelocities = rain.userData.velocities;
+    const rainPositions = lavaRain.geometry.attributes.position.array;
+    const rainVelocities = lavaRain.userData.velocities;
 
     for (let i = 0; i < rainPositions.length / 3; i++) {
         const idx = i * 3 + 1; // Y coordinate
         rainPositions[idx] += rainVelocities[i];
         if (rainPositions[idx] < 0) rainPositions[idx] = 50;
     }
-    rain.geometry.attributes.position.needsUpdate = true;
+    lavaRain.geometry.attributes.position.needsUpdate = true;
 
     dynamicLight.position.set(
         10 * Math.sin(time * 0.5),
@@ -166,9 +164,8 @@ function animate() {
         10 * Math.cos(time * 0.5)
     );
 
-    if (hotdog) {
-        hotdog.position.x = Math.sin(time * 0.5) * 5;
-        hotdog.position.z = Math.cos(time * 0.5) * 5;
+    if (lavaCreature) {
+        lavaCreature.rotation.y += 0.01; // Rotate the creature for effect
     }
 
     renderer.render(scene, camera);
