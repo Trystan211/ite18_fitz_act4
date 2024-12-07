@@ -75,7 +75,7 @@ new GLTFLoader().load(
     (gltf) => {
         lavaCreature = gltf.scene;
         lavaCreature.position.set(0, 1, 0);
-        lavaCreature.scale.set(5, 5, 5); // Adjust as necessary
+        lavaCreature.scale.set(7, 7, 7); // Adjust as necessary
         scene.add(lavaCreature);
 
         console.log("GLTF Loaded Scene:", gltf.scene);
