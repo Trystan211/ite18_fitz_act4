@@ -78,11 +78,21 @@ new GLTFLoader().load(
         lavaCreature.scale.set(5, 5, 5); // Adjust as necessary
         scene.add(lavaCreature);
 
+        console.log("GLTF Loaded Scene:", gltf.scene);
+        console.log("GLTF Animations:", gltf.animations);
+
         // Set up the animation mixer
-        mixer = new THREE.AnimationMixer(lavaCreature);
-        gltf.animations.forEach((clip) => {
-            mixer.clipAction(clip).play();
-        });
+        if (gltf.animations.length > 0) {
+            mixer = new THREE.AnimationMixer(lavaCreature);
+            gltf.animations.forEach((clip) => {
+                const action = mixer.clipAction(clip);
+                action.setLoop(THREE.LoopRepeat);
+                action.play();
+                console.log("Playing Animation Clip:", clip.name);
+            });
+        } else {
+            console.warn("No animations found in GLTF model.");
+        }
     },
     undefined,
     (error) => console.error("Failed to load lava creature model:", error)
