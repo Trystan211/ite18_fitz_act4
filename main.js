@@ -2,7 +2,7 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.m
 import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.152.2/examples/jsm/controls/OrbitControls.js";
 import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.152.2/examples/jsm/loaders/GLTFLoader.js";
 
-// === Basic Scene Setup ===
+// === Basic Scene Setup ni ===
 const scene = new THREE.Scene();
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -14,15 +14,15 @@ const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerH
 camera.position.set(0, 5, 15);
 scene.add(camera);
 
-// === Controls ===
+// === Controls sa camera ===
 new OrbitControls(camera, renderer.domElement);
 
-// === Lighting ===
+// === Lighting ni ===
 const dynamicLight = new THREE.PointLight(0xff4500, 8, 50); // Lava light
 dynamicLight.position.set(0, 10, 0);
 scene.add(dynamicLight);
 
-// === Lava Waves ===
+// === Lava Waves ni para mwa ===
 const lava = (() => {
     const geometry = new THREE.PlaneGeometry(75, 75, 300, 300);
     geometry.rotateX(-Math.PI / 2);
@@ -66,22 +66,22 @@ const lava = (() => {
 })();
 scene.add(lava);
 
-// === Lava Creature Model with Animations ===
+// === Si bb sam with animations ===
 let lavaCreature = null;
-let mixer = null; // Animation mixer for the creature
+let mixer = null; // Animation mixer para sa monster
 
 new GLTFLoader().load(
-    'https://trystan211.github.io/ite18_fitz_act4/metroid_primecreaturesmagmoor.glb', // Replace with the actual path to your model
+    'https://trystan211.github.io/ite18_fitz_act4/metroid_primecreaturesmagmoor.glb', 
     (gltf) => {
         lavaCreature = gltf.scene;
         lavaCreature.position.set(0, 1, 0);
-        lavaCreature.scale.set(7, 7, 7); // Adjust as necessary
+        lavaCreature.scale.set(7, 7, 7); // Kadak on niya
         scene.add(lavaCreature);
 
         console.log("GLTF Loaded Scene:", gltf.scene);
         console.log("GLTF Animations:", gltf.animations);
 
-        // Set up the animation mixer
+        // Set up sa animation mixer
         if (gltf.animations.length > 0) {
             mixer = new THREE.AnimationMixer(lavaCreature);
             gltf.animations.forEach((clip) => {
@@ -98,7 +98,7 @@ new GLTFLoader().load(
     (error) => console.error("Failed to load lava creature model:", error)
 );
 
-// === Lava Rain ===
+// === Lava Rain ni ===
 const lavaRain = (() => {
     const count = 10000;
     const positions = [];
@@ -130,10 +130,10 @@ const lavaRain = (() => {
 })();
 scene.add(lavaRain);
 
-// === Skybox ===
+// === Skybox ni ===
 const skyboxMaterial = new THREE.ShaderMaterial({
     uniforms: {
-        topColor: { value: new THREE.Color(0x4b0082) }, // Dark violet
+        topColor: { value: new THREE.Color(0x4b0082) }, 
         bottomColor: { value: new THREE.Color(0xff4500) }, // Bright lava
     },
     vertexShader: `
@@ -158,35 +158,35 @@ const skyboxMaterial = new THREE.ShaderMaterial({
 const skybox = new THREE.Mesh(new THREE.SphereGeometry(100, 32, 32), skyboxMaterial);
 scene.add(skybox);
 
-// === Animation ===
+// === Animation ni diri ===
 const clock = new THREE.Clock();
 
 function animate() {
-    const delta = clock.getDelta(); // Time since the last frame
+    const delta = clock.getDelta(); // By frame ni siya na calculation
     const time = clock.getElapsedTime();
 
-    // Update lava waves
+    // Update sa lava waves para mugana 
     lava.material.uniforms.time.value = time;
 
-    // Update rain
+    // Update sa rain
     const rainPositions = lavaRain.geometry.attributes.position.array;
     const rainVelocities = lavaRain.userData.velocities;
 
     for (let i = 0; i < rainPositions.length / 3; i++) {
-        const idx = i * 3 + 1; // Y coordinate
+        const idx = i * 3 + 1; // Y coordinates ni
         rainPositions[idx] += rainVelocities[i];
         if (rainPositions[idx] < 0) rainPositions[idx] = 50;
     }
     lavaRain.geometry.attributes.position.needsUpdate = true;
 
-    // Update dynamic light
+    // Update sa dynamic light para mugana
     dynamicLight.position.set(
         10 * Math.sin(time * 0.5),
         10,
         10 * Math.cos(time * 0.5)
     );
 
-    // Update lava creature animations
+    // Update lava monsster animations para mugana
     if (mixer) {
         mixer.update(delta);
     }
@@ -197,7 +197,7 @@ function animate() {
 
 animate();
 
-// === Responsive Resize ===
+// === Responsive Resizing nis page ===
 window.addEventListener("resize", () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
